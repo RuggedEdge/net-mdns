@@ -11,7 +11,7 @@
     
     <!-- developer build is always 0.42 -->
     <AssemblyVersion>0.42</AssemblyVersion>
-    <Version>0.421</Version>
+    <Version>0.422</Version>
     
     <!-- Nuget specs -->
     <PackageId>Makaretu.Dns.Multicast</PackageId>
