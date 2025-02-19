@@ -11,7 +11,8 @@ namespace Browser
     {
         public static void Main(string[] args)
         {
-            var mdns = new MulticastService();
+            var multicastPort = 5353;
+            var mdns = new MulticastService(multicastPort);
             var sd = new ServiceDiscovery(mdns);
 
             mdns.NetworkInterfaceDiscovered += (s, e) =>

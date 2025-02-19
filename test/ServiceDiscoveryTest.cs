@@ -10,15 +10,17 @@ namespace Makaretu.Dns
     [TestClass]
     public class ServiceDiscoveryTest
     {
+        static int MulticastPort = 5354;
+
         [TestMethod]
         public void Disposable()
         {
-            using (var sd = new ServiceDiscovery())
+            using (var sd = new ServiceDiscovery(MulticastPort))
             {
                 Assert.IsNotNull(sd);
             }
 
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             using (var sd = new ServiceDiscovery(mdns))
             {
                 Assert.IsNotNull(sd);
@@ -31,7 +33,7 @@ namespace Makaretu.Dns
             var service = new ServiceProfile("x", "_sdtest-1._udp", 1024, new[] { IPAddress.Loopback });
             var done = new ManualResetEvent(false);
 
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             mdns.NetworkInterfaceDiscovered += (s, e) =>
                 mdns.SendQuery(ServiceDiscovery.ServiceName, DnsClass.IN, DnsType.PTR);
             mdns.AnswerReceived += (s, e) =>
@@ -63,7 +65,7 @@ namespace Makaretu.Dns
             var service = new ServiceProfile("x", "_sdtest-1._udp", 1024, new[] { IPAddress.Loopback });
             var done = new ManualResetEvent(false);
 
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             mdns.NetworkInterfaceDiscovered += (s, e) =>
                 mdns.SendQuery(service.QualifiedServiceName, DnsClass.IN, DnsType.PTR);
             mdns.AnswerReceived += (s, e) =>
@@ -95,7 +97,7 @@ namespace Makaretu.Dns
             var service = new ServiceProfile("x2", "_sdtest-1._udp", 1024, new[] { IPAddress.Loopback });
             var done = new ManualResetEvent(false);
 
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             mdns.NetworkInterfaceDiscovered += (s, e) =>
                 mdns.SendQuery(service.HostName, DnsClass.IN, DnsType.A);
             mdns.AnswerReceived += (s, e) =>
@@ -128,7 +130,7 @@ namespace Makaretu.Dns
             service.Subtypes.Add("_example");
             var done = new ManualResetEvent(false);
 
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             mdns.NetworkInterfaceDiscovered += (s, e) =>
                 mdns.SendQuery("_example._sub._sdtest-1._udp.local", DnsClass.IN, DnsType.PTR);
             mdns.AnswerReceived += (s, e) =>
@@ -159,7 +161,7 @@ namespace Makaretu.Dns
         {
             var service = new ServiceProfile("x", "_sdtest-2._udp", 1024);
             var done = new ManualResetEvent(false);
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             var sd = new ServiceDiscovery(mdns);
 
             mdns.NetworkInterfaceDiscovered += (s, e) => sd.QueryAllServices();
@@ -188,7 +190,7 @@ namespace Makaretu.Dns
         {
             var service = new ServiceProfile("x", "_sdtest-5._udp", 1024);
             var done = new ManualResetEvent(false);
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             var sd = new ServiceDiscovery(mdns);
 
             mdns.NetworkInterfaceDiscovered += (s, e) => sd.QueryUnicastAllServices();
@@ -217,7 +219,7 @@ namespace Makaretu.Dns
         {
             var service = new ServiceProfile("y", "_sdtest-2._udp", 1024);
             var done = new ManualResetEvent(false);
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             var sd = new ServiceDiscovery(mdns);
 
             mdns.NetworkInterfaceDiscovered += (s, e) =>
@@ -253,7 +255,7 @@ namespace Makaretu.Dns
             var service2 = new ServiceProfile("y", "_sdtest-2._udp", 1024);
             service2.Subtypes.Add("apiv2");
             var done = new ManualResetEvent(false);
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             var sd = new ServiceDiscovery(mdns);
 
             mdns.NetworkInterfaceDiscovered += (s, e) =>
@@ -288,7 +290,7 @@ namespace Makaretu.Dns
         {
             var service = new ServiceProfile("y", "_sdtest-5._udp", 1024);
             var done = new ManualResetEvent(false);
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             var sd = new ServiceDiscovery(mdns);
 
             mdns.NetworkInterfaceDiscovered += (s, e) =>
@@ -323,7 +325,7 @@ namespace Makaretu.Dns
             var service = new ServiceProfile("y", "_sdtest-2._udp", 1024, new[] { IPAddress.Parse("127.1.1.1") });
             var done = new ManualResetEvent(false);
 
-            using (var mdns = new MulticastService())
+            using (var mdns = new MulticastService(MulticastPort))
             using (var sd = new ServiceDiscovery(mdns) { AnswersContainsAdditionalRecords = true })
             {
                 Message discovered = null;
@@ -367,7 +369,7 @@ namespace Makaretu.Dns
         {
             var service = new ServiceProfile("z", "_sdtest-7._udp", 1024);
             var done = new ManualResetEvent(false);
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             var sd = new ServiceDiscovery(mdns);
 
             mdns.NetworkInterfaceDiscovered += (s, e) => sd.QueryAllServices();
@@ -398,7 +400,7 @@ namespace Makaretu.Dns
             var arpaAddress = IPAddress.Loopback.GetArpaName();
             var done = new ManualResetEvent(false);
 
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             Message response = null;
             mdns.NetworkInterfaceDiscovered += (s, e) =>
                 mdns.SendQuery(arpaAddress, DnsClass.IN, DnsType.PTR);
@@ -442,7 +444,7 @@ namespace Makaretu.Dns
             profile.Subtypes.Add("apiv2");
             profile.AddProperty("someprop", "somevalue");
 
-            using (var sd = new ServiceDiscovery())
+            using (var sd = new ServiceDiscovery(MulticastPort))
             {
                 sd.Advertise(profile);
 
@@ -460,7 +462,7 @@ namespace Makaretu.Dns
             var service = new ServiceProfile("z", "_sdtest-4._udp", 1024, new[] { IPAddress.Loopback });
             var done = new ManualResetEvent(false);
 
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             mdns.AnswerReceived += (s, e) =>
             {
                 var msg = e.Message;
@@ -490,7 +492,7 @@ namespace Makaretu.Dns
             var service = new ServiceProfile("z", "_sdtest-4._udp", 1024, new[] { IPAddress.Loopback });
             var done = new ManualResetEvent(false);
 
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             mdns.AnswerReceived += (s, e) =>
             {
                 var msg = e.Message;
@@ -524,7 +526,7 @@ namespace Makaretu.Dns
             var service = new ServiceProfile("z", "_sdtest-4._udp", 1024, new[] { IPAddress.Loopback });
             var done = new ManualResetEvent(false);
             var nanswers = 0;
-            var mdns = new MulticastService
+            var mdns = new MulticastService(MulticastPort)
             {
                 IgnoreDuplicateMessages = false
             };

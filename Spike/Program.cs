@@ -8,8 +8,10 @@ namespace Spike
 {
     class Program
     {
+        static int MulticastPort = 5353;
         static void Main(string[] args)
         {
+
             Console.WriteLine("Multicast DNS spike");
 
             // set logger factory
@@ -23,7 +25,7 @@ namespace Spike
             };
             LogManager.Adapter = new ConsoleOutLoggerFactoryAdapter(properties);
 
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
 
             foreach (var a in MulticastService.GetIPAddresses())
             {

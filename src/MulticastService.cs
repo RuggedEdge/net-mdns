@@ -37,6 +37,7 @@ namespace Makaretu.Dns
 
         List<NetworkInterface> knownNics = new List<NetworkInterface>();
         int maxPacketSize;
+        int multicastPort;
 
         /// <summary>
         ///   Recently sent messages.
@@ -124,11 +125,13 @@ namespace Makaretu.Dns
         /// <summary>
         ///   Create a new instance of the <see cref="MulticastService"/> class.
         /// </summary>
+        /// <param name="port">The Multicast port to use</param>
         /// <param name="filter">
         ///   Multicast listener will be bound to result of filtering function.
         /// </param>
-        public MulticastService(Func<IEnumerable<NetworkInterface>, IEnumerable<NetworkInterface>> filter = null)
+        public MulticastService(int port, Func<IEnumerable<NetworkInterface>, IEnumerable<NetworkInterface>> filter = null)
         {
+            multicastPort = port;
             networkInterfacesFilter = filter;
 
             UseIpv4 = Socket.OSSupportsIPv4;
@@ -312,7 +315,7 @@ namespace Makaretu.Dns
                 if (newNics.Any() || oldNics.Any())
                 {
                     client?.Dispose();
-                    client = new MulticastClient(UseIpv4, UseIpv6, networkInterfacesFilter?.Invoke(knownNics) ?? knownNics);
+                    client = new MulticastClient(UseIpv4, UseIpv6, networkInterfacesFilter?.Invoke(knownNics) ?? knownNics, multicastPort);
                     client.MessageReceived += OnDnsMessage;
                 }
 

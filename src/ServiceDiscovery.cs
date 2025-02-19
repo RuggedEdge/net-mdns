@@ -32,8 +32,8 @@ namespace Makaretu.Dns
         /// <summary>
         ///   Creates a new instance of the <see cref="ServiceDiscovery"/> class.
         /// </summary>
-        public ServiceDiscovery()
-            : this(new MulticastService())
+        public ServiceDiscovery(int multicastPort)
+            : this(new MulticastService(multicastPort))
         {
             ownsMdns = true;
 

@@ -19,26 +19,24 @@ namespace Makaretu.Dns
     {
         static readonly ILog log = LogManager.GetLogger(typeof(MulticastClient));
 
-        /// <summary>
-        ///   The port number assigned to Multicast DNS.
-        /// </summary>
-        /// <value>
-        ///   Port number 5353.
-        /// </value>
-        public static readonly int MulticastPort = 5353;
-
         static readonly IPAddress MulticastAddressIp4 = IPAddress.Parse("224.0.0.251");
         static readonly IPAddress MulticastAddressIp6 = IPAddress.Parse("FF02::FB");
-        static readonly IPEndPoint MdnsEndpointIp6 = new IPEndPoint(MulticastAddressIp6, MulticastPort);
-        static readonly IPEndPoint MdnsEndpointIp4 = new IPEndPoint(MulticastAddressIp4, MulticastPort);
+        readonly IPEndPoint MdnsEndpointIp6;
+        readonly IPEndPoint MdnsEndpointIp4;
 
         readonly List<UdpClient> receivers;
         readonly ConcurrentDictionary<IPAddress, UdpClient> senders = new ConcurrentDictionary<IPAddress, UdpClient>();
 
         public event EventHandler<UdpReceiveResult> MessageReceived;
 
-        public MulticastClient(bool useIPv4, bool useIpv6, IEnumerable<NetworkInterface> nics)
+        public static int MulticastPort;
+
+        public MulticastClient(bool useIPv4, bool useIpv6, IEnumerable<NetworkInterface> nics, int multicastPort)
         {
+            MulticastPort = multicastPort;
+            MdnsEndpointIp6 = new IPEndPoint(MulticastAddressIp6, multicastPort);
+            MdnsEndpointIp4 = new IPEndPoint(MulticastAddressIp4, multicastPort);
+
             // Setup the receivers.
             receivers = new List<UdpClient>();
 
@@ -53,7 +51,7 @@ namespace Makaretu.Dns
                     LinuxHelper.ReuseAddresss(receiver4.Client);
                 }
 #endif
-                receiver4.Client.Bind(new IPEndPoint(IPAddress.Any, MulticastPort));
+                receiver4.Client.Bind(new IPEndPoint(IPAddress.Any, multicastPort));
                 receivers.Add(receiver4);
             }
 
@@ -68,7 +66,7 @@ namespace Makaretu.Dns
                     LinuxHelper.ReuseAddresss(receiver6.Client);
                 }
 #endif
-                receiver6.Client.Bind(new IPEndPoint(IPAddress.IPv6Any, MulticastPort));
+                receiver6.Client.Bind(new IPEndPoint(IPAddress.IPv6Any, multicastPort));
                 receivers.Add(receiver6);
             }
 
@@ -84,7 +82,7 @@ namespace Makaretu.Dns
                     continue;
                 }
 
-                var localEndpoint = new IPEndPoint(address, MulticastPort);
+                var localEndpoint = new IPEndPoint(address, multicastPort);
                 var sender = new UdpClient(address.AddressFamily);
                 try
                 {

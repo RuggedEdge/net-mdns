@@ -10,14 +10,17 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Makaretu.Dns
 {
+   
 
     [TestClass]
     public class MulticastServiceTest
     {
+         static int MulticastPort = 5354;
+    
         [TestMethod]
         public void Can_Create()
         {
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             Assert.IsNotNull(mdns);
             Assert.IsTrue(mdns.IgnoreDuplicateMessages);
         }
@@ -25,7 +28,7 @@ namespace Makaretu.Dns
         [TestMethod]
         public void StartStop()
         {
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             mdns.Start();
             mdns.Stop();
         }
@@ -37,7 +40,7 @@ namespace Makaretu.Dns
             var done = new ManualResetEvent(false);
             Message msg = null;
 
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             mdns.NetworkInterfaceDiscovered += (s, e) => ready.Set();
             mdns.QueryReceived += (s, e) =>
             {
@@ -70,7 +73,7 @@ namespace Makaretu.Dns
             var done = new ManualResetEvent(false);
             Message msg = null;
 
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             mdns.NetworkInterfaceDiscovered += (s, e) => ready.Set();
             mdns.QueryReceived += (s, e) =>
             {
@@ -99,7 +102,7 @@ namespace Makaretu.Dns
             var done = new ManualResetEvent(false);
             Message response = null;
 
-            using (var mdns = new MulticastService())
+            using (var mdns = new MulticastService(MulticastPort))
             {
                 mdns.NetworkInterfaceDiscovered += (s, e) => mdns.SendQuery(service);
                 mdns.QueryReceived += (s, e) =>
@@ -150,7 +153,7 @@ namespace Makaretu.Dns
             });
             var packet = query.ToByteArray();
             var client = new UdpClient();
-            using (var mdns = new MulticastService())
+            using (var mdns = new MulticastService(5353))
             {
                 mdns.NetworkInterfaceDiscovered += (s, e) => ready.Set();
                 mdns.QueryReceived += (s, e) =>
@@ -192,7 +195,7 @@ namespace Makaretu.Dns
             var done = new ManualResetEvent(false);
             Message response = null;
 
-            using (var mdns = new MulticastService())
+            using (var mdns = new MulticastService(MulticastPort))
             {
                 mdns.UseIpv4 = true;
                 mdns.UseIpv6 = false;
@@ -239,7 +242,7 @@ namespace Makaretu.Dns
             var done = new ManualResetEvent(false);
             Message response = null;
 
-            using (var mdns = new MulticastService())
+            using (var mdns = new MulticastService(MulticastPort))
             {
                 mdns.UseIpv4 = false;
                 mdns.UseIpv6 = true;
@@ -284,7 +287,7 @@ namespace Makaretu.Dns
             var service = Guid.NewGuid().ToString() + ".local";
             var done = new ManualResetEvent(false);
 
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             mdns.NetworkInterfaceDiscovered += (s, e) => mdns.SendQuery(service);
             mdns.QueryReceived += (s, e) =>
             {
@@ -324,7 +327,7 @@ namespace Makaretu.Dns
         public void Nics()
         {
             var done = new ManualResetEvent(false);
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             IEnumerable<NetworkInterface> nics = null;
             mdns.NetworkInterfaceDiscovered += (s, e) =>
             {
@@ -347,7 +350,7 @@ namespace Makaretu.Dns
         public void SendQuery_TooBig()
         {
             var done = new ManualResetEvent(false);
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             mdns.NetworkInterfaceDiscovered += (s, e) => done.Set();
             mdns.Start();
             try
@@ -371,7 +374,7 @@ namespace Makaretu.Dns
         public void SendAnswer_TooBig()
         {
             var done = new ManualResetEvent(false);
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             mdns.NetworkInterfaceDiscovered += (s, e) => done.Set();
             mdns.Start();
             try
@@ -398,7 +401,7 @@ namespace Makaretu.Dns
             var done = new ManualResetEvent(false);
             Message response = null;
 
-            var a = new MulticastService();
+            var a = new MulticastService(MulticastPort);
             a.QueryReceived += (s, e) =>
             {
                 var msg = e.Message;
@@ -419,7 +422,7 @@ namespace Makaretu.Dns
                 }
             };
 
-            var b = new MulticastService();
+            var b = new MulticastService(MulticastPort);
             b.NetworkInterfaceDiscovered += (s, e) => b.SendQuery(service);
             b.AnswerReceived += (s, e) =>
             {
@@ -458,12 +461,12 @@ namespace Makaretu.Dns
         [TestMethod]
         public void Disposable()
         {
-            using (var mdns = new MulticastService())
+            using (var mdns = new MulticastService(MulticastPort))
             {
                 Assert.IsNotNull(mdns);
             }
 
-            using (var mdns = new MulticastService())
+            using (var mdns = new MulticastService(MulticastPort))
             {
                 Assert.IsNotNull(mdns);
                 mdns.Start();
@@ -478,7 +481,7 @@ namespace Makaretu.Dns
             query.Questions.Add(new Question { Name = service, Type = DnsType.ANY });
             var cancellation = new CancellationTokenSource(2000);
 
-            using (var mdns = new MulticastService())
+            using (var mdns = new MulticastService(MulticastPort))
             {
                 mdns.QueryReceived += (s, e) =>
                 {
@@ -513,7 +516,7 @@ namespace Makaretu.Dns
             query.Questions.Add(new Question { Name = service, Type = DnsType.ANY });
             var cancellation = new CancellationTokenSource(500);
 
-            using (var mdns = new MulticastService())
+            using (var mdns = new MulticastService(MulticastPort))
             {
                 mdns.Start();
                 ExceptionAssert.Throws<TaskCanceledException>(() =>
@@ -527,7 +530,7 @@ namespace Makaretu.Dns
         public async Task DuplicateResponse()
         {
             var service = Guid.NewGuid().ToString() + ".local";
-            using (var mdns = new MulticastService())
+            using (var mdns = new MulticastService(MulticastPort))
             {
                 var answerCount = 0;
                 mdns.NetworkInterfaceDiscovered += (s, e) =>
@@ -570,7 +573,7 @@ namespace Makaretu.Dns
         {
             var service = Guid.NewGuid().ToString() + ".local";
 
-            using (var mdns = new MulticastService())
+            using (var mdns = new MulticastService(MulticastPort))
             {
                 var answerCount = 0;
                 mdns.NetworkInterfaceDiscovered += (s, e) =>
@@ -616,8 +619,8 @@ namespace Makaretu.Dns
         {
             var ready1 = new ManualResetEvent(false);
             var ready2 = new ManualResetEvent(false);
-            using (var mdns1 = new MulticastService())
-            using (var mdns2 = new MulticastService())
+            using (var mdns1 = new MulticastService(MulticastPort))
+            using (var mdns2 = new MulticastService(MulticastPort))
             {
                 mdns1.NetworkInterfaceDiscovered += (s, e) => ready1.Set();
                 mdns1.Start();
@@ -634,12 +637,12 @@ namespace Makaretu.Dns
         public void MalformedMessage()
         {
             byte[] malformedMessage = null;
-            using (var mdns = new MulticastService())
+            using (var mdns = new MulticastService(MulticastPort))
             {
                 mdns.MalformedMessage += (s, e) => malformedMessage = e;
 
                 var msg = new byte[] { 0xff };
-                var endPoint = new IPEndPoint(IPAddress.Loopback, 5353);
+                var endPoint = new IPEndPoint(IPAddress.Loopback, MulticastPort);
                 var udp = new UdpReceiveResult(msg, endPoint);
                 mdns.OnDnsMessage(this, udp);
 

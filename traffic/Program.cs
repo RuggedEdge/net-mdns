@@ -5,11 +5,12 @@ namespace traffic
 {
     class Program
     {
+        static int MulticastPort = 5353;
         static readonly object ttyLock = new object();
 
         static void Main(string[] args)
         {
-            var mdns = new MulticastService();
+            var mdns = new MulticastService(MulticastPort);
             mdns.NetworkInterfaceDiscovered += (s, e)
                 => mdns.SendQuery(ServiceDiscovery.ServiceName, type: DnsType.PTR);
             mdns.AnswerReceived += OnGoodDnsMessage;
