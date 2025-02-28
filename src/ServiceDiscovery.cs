@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Common.Logging;
 using Makaretu.Dns.Resolving;
@@ -32,8 +33,8 @@ namespace Makaretu.Dns
         /// <summary>
         ///   Creates a new instance of the <see cref="ServiceDiscovery"/> class.
         /// </summary>
-        public ServiceDiscovery(int multicastPort)
-            : this(new MulticastService(multicastPort))
+        public ServiceDiscovery(IPAddress multicastAddress, int multicastPort)
+            : this(new MulticastService(multicastAddress, multicastPort))
         {
             ownsMdns = true;
 

@@ -2,6 +2,7 @@ using Makaretu.Dns;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,7 +13,8 @@ namespace Browser
         public static void Main(string[] args)
         {
             var multicastPort = 5353;
-            var mdns = new MulticastService(multicastPort);
+            var multicastAddress = IPAddress.Parse("224.0.0.251");
+            var mdns = new MulticastService(multicastAddress, multicastPort);
             var sd = new ServiceDiscovery(mdns);
 
             mdns.NetworkInterfaceDiscovered += (s, e) =>

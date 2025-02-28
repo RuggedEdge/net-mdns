@@ -1,5 +1,6 @@
 ﻿using Makaretu.Dns;
 using System;
+using System.Net;
 
 namespace traffic
 {
@@ -7,10 +8,11 @@ namespace traffic
     {
         static int MulticastPort = 5353;
         static readonly object ttyLock = new object();
+        static IPAddress MulticastAddress = IPAddress.Parse("224.0.0.251");
 
         static void Main(string[] args)
         {
-            var mdns = new MulticastService(MulticastPort);
+            var mdns = new MulticastService(MulticastAddress, MulticastPort);
             mdns.NetworkInterfaceDiscovered += (s, e)
                 => mdns.SendQuery(ServiceDiscovery.ServiceName, type: DnsType.PTR);
             mdns.AnswerReceived += OnGoodDnsMessage;

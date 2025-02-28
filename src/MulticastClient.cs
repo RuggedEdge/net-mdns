@@ -19,9 +19,8 @@ namespace Makaretu.Dns
     {
         static readonly ILog log = LogManager.GetLogger(typeof(MulticastClient));
 
-        static readonly IPAddress MulticastAddressIp4 = IPAddress.Parse("224.0.0.251");
-        static readonly IPAddress MulticastAddressIp6 = IPAddress.Parse("FF02::FB");
-        readonly IPEndPoint MdnsEndpointIp6;
+        private IPAddress MulticastAddressIp4;
+
         readonly IPEndPoint MdnsEndpointIp4;
 
         readonly List<UdpClient> receivers;
@@ -31,11 +30,10 @@ namespace Makaretu.Dns
 
         public static int MulticastPort;
 
-        public MulticastClient(bool useIPv4, bool useIpv6, IEnumerable<NetworkInterface> nics, int multicastPort)
+        public MulticastClient(bool useIPv4, bool useIpv6, IEnumerable<NetworkInterface> nics, IPAddress multicastAddress, int multicastPort)
         {
             MulticastPort = multicastPort;
-            MdnsEndpointIp6 = new IPEndPoint(MulticastAddressIp6, multicastPort);
-            MdnsEndpointIp4 = new IPEndPoint(MulticastAddressIp4, multicastPort);
+            MdnsEndpointIp4 = new IPEndPoint(multicastAddress, multicastPort);
 
             // Setup the receivers.
             receivers = new List<UdpClient>();
@@ -101,13 +99,6 @@ namespace Makaretu.Dns
                             sender.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(MulticastAddressIp4));
                             sender.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastLoopback, true);
                             break;
-                        case AddressFamily.InterNetworkV6:
-                            receiver6.Client.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, new IPv6MulticastOption(MulticastAddressIp6, address.ScopeId));
-                            sender.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                            sender.Client.Bind(localEndpoint);
-                            sender.Client.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.AddMembership, new IPv6MulticastOption(MulticastAddressIp6));
-                            sender.Client.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.MulticastLoopback, true);
-                            break;
                         default:
                             throw new NotSupportedException($"Address family {address.AddressFamily}.");
                     }
@@ -143,7 +134,7 @@ namespace Makaretu.Dns
             {
                 try
                 {
-                    var endpoint = sender.Key.AddressFamily == AddressFamily.InterNetwork ? MdnsEndpointIp4 : MdnsEndpointIp6;
+                    var endpoint = MdnsEndpointIp4;
                     await sender.Value.SendAsync(
                         message, message.Length, 
                         endpoint)

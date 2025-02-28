@@ -3,12 +3,15 @@ using Common.Logging.Simple;
 using Makaretu.Dns;
 using System;
 using System.Linq;
+using System.Net;
 
 namespace Spike
 {
     class Program
     {
         static int MulticastPort = 5353;
+        static IPAddress MulticastAddress = IPAddress.Parse("224.0.0.251");
+
         static void Main(string[] args)
         {
 
@@ -25,7 +28,7 @@ namespace Spike
             };
             LogManager.Adapter = new ConsoleOutLoggerFactoryAdapter(properties);
 
-            var mdns = new MulticastService(MulticastPort);
+            var mdns = new MulticastService(MulticastAddress, MulticastPort);
 
             foreach (var a in MulticastService.GetIPAddresses())
             {
