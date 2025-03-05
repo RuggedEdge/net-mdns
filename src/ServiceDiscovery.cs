@@ -52,6 +52,7 @@ namespace Makaretu.Dns
         public ServiceDiscovery(MulticastService mdns)
         {
             this.Mdns = mdns;
+            mdns.UseIpv6 = false;
             mdns.QueryReceived += OnQuery;
             mdns.AnswerReceived += OnAnswer;
         }

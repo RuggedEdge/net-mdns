@@ -126,14 +126,15 @@ namespace Makaretu.Dns
         /// <summary>
         ///   Create a new instance of the <see cref="MulticastService"/> class.
         /// </summary>
-        /// <param name="port">The Multicast port to use</param>
+        /// <param name="multicastAddress">The Multicast Address to use</param>
+        /// <param name="multicastPort">The Multicast port to use</param>
         /// <param name="filter">
         ///   Multicast listener will be bound to result of filtering function.
         /// </param>
-        public MulticastService(IPAddress multicastAddress, int port, Func<IEnumerable<NetworkInterface>, IEnumerable<NetworkInterface>> filter = null)
+        public MulticastService(IPAddress multicastAddress, int multicastPort, Func<IEnumerable<NetworkInterface>, IEnumerable<NetworkInterface>> filter = null)
         {
-            multicastPort = port;
-            multicastAddress = multicastAddress;
+            this.multicastPort = multicastPort;
+            this.multicastAddress = multicastAddress;
             networkInterfacesFilter = filter;
 
             UseIpv4 = Socket.OSSupportsIPv4;
